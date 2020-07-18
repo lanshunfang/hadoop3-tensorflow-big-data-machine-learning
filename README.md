@@ -29,6 +29,7 @@ Apache Spark, HDFS, Hadoop YARN, Machine Learning, Deep Learning, Anaconda, Jupy
 - macOS Catalina as the development machine
 - Anaconda is already installed
 - Homebrew, Java8, git is installed
+- A global variable `JAVA_HOME_8` is pointing to Java8
 
 ### Install required packages
 
@@ -55,20 +56,18 @@ conda activate spark
 cd ~/dev/spark-jupyter
 $SPARK_HOME/sbin/start-all.sh & 
 jupyter lab
+# Wait until the default browser opens Jupyter Lab at http://localhost:8888/lab or http://localhost:8889/lab
+# Spark Master UI is running at http://localhost:8080/
 ```
 
->>> sc.master
-'local[*]'
->>> sc.version
-'3.0.0'
->>> 
+### Init a new Jupyter Noteboork in Jupyter Lab and link it to Spark
 
 open http://localhost:8080/
 
 
-Reference:
-https://docs.anaconda.com/anaconda-scale/howto/spark-configuration/#scale-spark-config-cloudera
-https://medium.com/beeranddiapers/installing-apache-spark-on-mac-os-ce416007d79f
-https://www.xplenty.com/blog/apache-spark-vs-hadoop-mapreduce/
+## Reference:
+- https://docs.anaconda.com/anaconda-scale/howto/spark-configuration/#scale-spark-config-cloudera
+- https://medium.com/beeranddiapers/installing-apache-spark-on-mac-os-ce416007d79f
+- https://www.xplenty.com/blog/apache-spark-vs-hadoop-mapreduce/
 
 
