@@ -23,11 +23,18 @@ MapReduce, Hadoop, HDFS, YARN, Pig,  Machine Learning, Deep Learning, Anaconda, 
 ## Summary
 
 - This project is trying to stand at the standpoint of a machine learning developer who wants to utilize Big data framework to ease their daily work
-- We will use Apache Pig to drive a Hadoop MapReduce job to perform data preprocessing, like imputing missing values, transforming string values to numeric representations and scaling data with normalization and standardization
-- We will use TonY, the open source project that integrate Hadoop to Tensorflow for distributed training.
+- We will use Hadoop mapred Streaming utility to perform data preprocessing over Hadoop MapReduce via Python
+  - Missing Data analisis with imputing
+  - Categorical data transformation
+  - Data scaling (normalization)
+- Store Data as TFRecords files via Tensorflow TFRecordWriter
+- Use Keras over Tensorflow and HDFS to train our network in GPU (via plaidml)
+- (Optional) Rewrite the MapReduce python script in Spark and compare the speed then use AWS S3/Spark/Tensorflow stack to train the data
+<!-- - We will use Apache Pig to drive a Hadoop MapReduce job to perform data preprocessing, like imputing missing values, transforming string values to numeric representations and scaling data with normalization and standardization -->
+<!-- - We will use TonY, the open source project that integrate Hadoop to Tensorflow for distributed training. -->
 <!-- - We will use Keras over Google Tensorflow 2 to train a neural network in the big data distributed nodes via Tensorflow distriubted worker training -->
 
-## Steps
+## Env preparations
 
 ### Presequites
 - macOS Catalina as the development machine
@@ -65,14 +72,23 @@ jupyter lab
 # Spark Master UI is running at http://localhost:8080/
 ```
 
+
+## Main Steps
+
 ### Normalization data into [0, 1]
 ```pig
 grunt> loaded_data = LOAD 'hdfs://localhost:9000/tmp/mock.csv' USING PigStorage(',');
 ```
 
+### Load Chunk Data from HDFS into Tensorflow
+
+
+
 
 
 ## Reference:
+
+### TMP
 - https://www.slideshare.net/ssuser72f42a/scaling-deep-learning-on-hadoop-at-linkedin
 - https://engineering.linkedin.com/blog/2018/09/open-sourcing-tony--native-support-of-tensorflow-on-hadoop
 - https://www.tensorflow.org/tutorials/distribute/multi_worker_with_keras
@@ -80,6 +96,20 @@ grunt> loaded_data = LOAD 'hdfs://localhost:9000/tmp/mock.csv' USING PigStorage(
 - https://blog.tensorflow.org/2020/01/hyperparameter-tuning-with-keras-tuner.html
 - https://stackoverflow.com/questions/45585909/how-to-do-normalization-for-each-feature-using-hadoop-pig?newreg=07eb455db44c4d8586cc8c8beed906bc
 - https://pig.apache.org/docs/r0.17.0/udf.html#python-udfs
+
+
+### Source Data
+- https://www.kaggle.com/sdolezel/black-friday
+
+### HDFS with Tensorflow
+- Hadoop Streaming: https://hadoop.apache.org/docs/current/hadoop-streaming/HadoopStreaming.html
+- Running Hadoop MapReduce with Python: https://www.michael-noll.com/tutorials/writing-an-hadoop-mapreduce-program-in-python/
+- https://stackoverflow.com/questions/54381036/which-is-better-when-reading-from-remote-hosts-like-hdfs-tfrecorddatasetnum-pa
+- https://stackoverflow.com/questions/41402332/tensorflow-create-a-tfrecords-file-from-csv
+
+### Amazon Elastic MapReduce over Hadoop (Amazon EMR) with S3/Spark/Tensorflow
+- https://aws.amazon.com/about-aws/whats-new/2018/09/support-for-tensorflow-s3-select-with-spark-on-amazon-emr-release-517/
+
 
 
 
