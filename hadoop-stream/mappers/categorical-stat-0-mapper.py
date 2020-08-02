@@ -16,7 +16,7 @@ def revert_indexing_column_cat(col_idx, field_value):
     # 0__A  0
     # meaning: at column 0, there is a value A
     # Why 0__ prefix? It's eliminating ambiguity among columns
-    return f'{col_idx}__{field_value}' + '\t' + col_idx
+    return f'{col_idx}__{field_value}' + '\t' + str(col_idx)
 
 def main(argv):
     line = sys.stdin.readline()
@@ -31,7 +31,7 @@ def main(argv):
                 if 'User_ID' in field_value or len(fields) < 10:
                     continue
                 if re.match('[^0-9]', field_value) \
-                    or field in columns_as_category_enforced:
+                    or field_value in columns_as_category_enforced:
                     print(revert_indexing_column_cat(col_idx, field_value))
             line = sys.stdin.readline()
     except "end of file":

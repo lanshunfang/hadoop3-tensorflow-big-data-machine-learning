@@ -17,7 +17,7 @@ def restore_indexing_column_cat(key_value_list):
     # 0__A  0
     # meaning: at column 0, there is a value A
     # Why 0__ prefix? It's eliminating ambiguity among columns
-    return key_value_list[1] + '\t' + key_value_list[0]
+    return str(key_value_list[1]) + '\t' + str(key_value_list[0])
 
 
 def main(argv):
@@ -26,6 +26,8 @@ def main(argv):
         while line:
             line = line[:-1]
             # 0__A  0   0   0   0   0
+            if not line or '\t' not in line:
+                continue
             key_value_list = line.split('\t')
             print(restore_indexing_column_cat(key_value_list))
             line = sys.stdin.readline()
