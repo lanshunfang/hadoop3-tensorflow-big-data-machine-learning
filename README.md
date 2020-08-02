@@ -100,6 +100,9 @@ grunt> loaded_data = LOAD 'hdfs://localhost:9000/tmp/mock.csv' USING PigStorage(
 
 ### Source Data
 - https://www.kaggle.com/sdolezel/black-friday
+- Hadoop Streaming
+  - https://hadoop.apache.org/docs/r3.3.0/hadoop-streaming/HadoopStreaming.html
+  - https://nancyyanyu.github.io/posts/f53c188b/
 
 ### HDFS with Tensorflow
 - Hadoop Streaming: https://hadoop.apache.org/docs/current/hadoop-streaming/HadoopStreaming.html
