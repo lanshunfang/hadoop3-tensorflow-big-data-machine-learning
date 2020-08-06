@@ -21,7 +21,11 @@ tar cf ./target/distributive-files.tar ./mappers/* ./reducers/*
 echo "### Uniq category values for each column"
 python mappers/categorical-stat-0-mapper.py
 '''
+<<<<<<< HEAD
 1000004,P00184942,M,46-50,7,B,2,1,1,8,17,19215
+=======
+1000001,P00069042,F,0-17,10,A,2,0,3,,,8370 
+>>>>>>> 1223497cfb8ccff914d474941f2f1a1c7cb9f24c
 
 '''
 python reducers/categorical-stat-0-reducer.py
