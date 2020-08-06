@@ -21,18 +21,16 @@ def revert_indexing_column_cat(col_idx, field_value):
 def main(argv):
     line = sys.stdin.readline()
     try:
-        while line:
+        while line and line.strip():
             line = line[:-1]
-            if not line or ',' not in line:
-                continue
-
-            fields = line.split(",")
-            for col_idx, field_value in enumerate(fields):
-                if 'User_ID' in field_value or len(fields) < 10:
-                    continue
-                if re.match('[^0-9]', field_value) \
-                    or field_value in columns_as_category_enforced:
-                    print(revert_indexing_column_cat(col_idx, field_value))
+            if line and ',' in line:
+                fields = line.strip().split(",")
+                for col_idx, field_value in enumerate(fields):
+                    if 'User_ID' in field_value or len(fields) < 10:
+                        continue
+                    if re.match('[^0-9]', field_value) \
+                        or field_value in columns_as_category_enforced:
+                        print(revert_indexing_column_cat(col_idx, field_value))
             line = sys.stdin.readline()
     except "end of file":
         return None

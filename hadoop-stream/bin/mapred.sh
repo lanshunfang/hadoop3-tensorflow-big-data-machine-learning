@@ -19,19 +19,32 @@ rm ./target/distributive-files.tar
 tar cf ./target/distributive-files.tar ./mappers/* ./reducers/*
 
 echo "### Uniq category values for each column"
-hadoop fs -rm -r /machine-learning-final/output-0
+python mappers/categorical-stat-0-mapper.py
+'''
+1000001,P00069042,F,0-17,10,A,2,0,3,,,8370 
+
+'''
+python reducers/categorical-stat-0-reducer.py
+'''
+Manual enter \t
+0__A    0
+0__A    0
+0__B    0
+1__P00001   1
+
+'''
+
 # hadoop fs -rm -r /machine-learning-final/archives
 # hadoop fs -mkdir -p /machine-learning-final/archives
 # hadoop fs -put ./target/distributive-files.tar /machine-learning-final/archives
 #     -archives hdfs://localhost:9000/machine-learning-final/archives/distributive-files.tar \
+hadoop fs -rm -r /machine-learning-final/output-0
 $HADOOP_HOME/bin/mapred streaming \
     -files ./mappers/categorical-stat-0-mapper.py,./reducers/categorical-stat-0-reducer.py \
-    -D mapreduce.job.reduces=0 \
     -input "/machine-learning-final/train.csv" \
     -output "/machine-learning-final/output-0" \
     -mapper "categorical-stat-0-mapper.py" \
-    -reducer "categorical-stat-0-reducer.py" \
-    -combiner "categorical-stat-0-reducer.py" 
+    -reducer "categorical-stat-0-reducer.py"
 
 hadoop fs -head "/machine-learning-final/output-0/part-00000"
 echo "### Encode category with number representation"
