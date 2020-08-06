@@ -19,34 +19,52 @@ rm ./target/distributive-files.tar
 tar cf ./target/distributive-files.tar ./mappers/* ./reducers/*
 
 echo "### Uniq category values for each column"
-hadoop fs -rm -r /machine-learning-final/output-0
+python mappers/categorical-stat-0-mapper.py
+'''
+1000004,P00184942,M,46-50,7,B,2,1,1,8,17,19215
+
+'''
+python reducers/categorical-stat-0-reducer.py
+'''
+Manual enter \t
+0__A    0
+0__A    0
+0__B    0
+1__P00001   1
+
+'''
+
 # hadoop fs -rm -r /machine-learning-final/archives
 # hadoop fs -mkdir -p /machine-learning-final/archives
 # hadoop fs -put ./target/distributive-files.tar /machine-learning-final/archives
 #     -archives hdfs://localhost:9000/machine-learning-final/archives/distributive-files.tar \
+hadoop fs -rm -r /machine-learning-final/output-0
 $HADOOP_HOME/bin/mapred streaming \
     -files ./mappers/categorical-stat-0-mapper.py,./reducers/categorical-stat-0-reducer.py \
-    -D mapreduce.job.reduces=0 \
     -input "/machine-learning-final/train.csv" \
     -output "/machine-learning-final/output-0" \
     -mapper "categorical-stat-0-mapper.py" \
-    -reducer "categorical-stat-0-reducer.py" \
-    -combiner "categorical-stat-0-reducer.py" 
+    -reducer "categorical-stat-0-reducer.py"
 
 hadoop fs -head "/machine-learning-final/output-0/part-00000"
+hadoop fs -get "/machine-learning-final/output-0/part-00000"
+rm column_encoder_definition.txt
+mv part-00000 column_encoder_definition.txt
 echo "### Encode category with number representation"
 # /machine-learning-final/output/part-r-00000
 
+python ./mappers/categorical-stat-1-mapper.py
+'''
+    1000004,P00184942,M,46-50,7,B,2,1,1,8,17,19215
+'''
+
 hadoop fs -rm -r /machine-learning-final/output-1
 $HADOOP_HOME/bin/mapred streaming \
-    -D mapred.reduce.tasks=1 \
-    -input /machine-learning-final/output-0/part-r-* \
-    -output /machine-learning-final/output-1 \
-    -mapper ./mappers/categorical-stat-1-mapper.py \
-    -reducer ./mappers/categorical-stat-1-reducer.py \
-    -combiner ./mappers/categorical-stat-1-reducer.py \
-    -archives ./target/distributive-files.tar.gz
+    -files hdfs://localhost:9000/machine-learning-final/output-0/part-00000#column_encoder_definition.txt,./mappers/categorical-stat-1-mapper.py \
+    -input "/machine-learning-final/train.csv"  \
+    -output "/machine-learning-final/output-1" \
+    -mapper "categorical-stat-1-mapper.py"
 
-hadoop fs -getmerge /machine-learning-final/output-1/part-r-* ./cache/column-cat-code.txt
-rm ./target/distributive-files.tar.gz
-tar zcf ./target/distributive-files.tar.gz ./mappers ./reducers ./cache
+rm column_encoder_definition.txt
+hadoop fs -head "/machine-learning-final/output-1/part-00000"
+hadoop fs -getmerge /machine-learning-final/output-1/part-00000 ./target/hadoop_encoded.csv

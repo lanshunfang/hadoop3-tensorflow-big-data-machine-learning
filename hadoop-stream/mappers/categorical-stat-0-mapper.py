@@ -4,12 +4,14 @@ import sys
 import re
 
 columns_as_category_enforced = {
-    'User_ID': True,
-    'Product_ID': True,
-    'Occupation': True,
-    'City_Category': True,
-    'Product_Category_2': True,
-    'Product_Category_3': True,
+    0: 'User_ID',
+    1: 'Product_ID',
+    3: 'Age',
+    4: 'Occupation',
+    5: 'City_Category',
+    8: 'Product_Category_1',
+    9: 'Product_Category_2',
+    10: 'Product_Category_3',
 }
 
 def revert_indexing_column_cat(col_idx, field_value):
@@ -21,18 +23,16 @@ def revert_indexing_column_cat(col_idx, field_value):
 def main(argv):
     line = sys.stdin.readline()
     try:
-        while line:
+        while line and line.strip():
             line = line[:-1]
-            if not line or ',' not in line:
-                continue
-
-            fields = line.split(",")
-            for col_idx, field_value in enumerate(fields):
-                if 'User_ID' in field_value or len(fields) < 10:
-                    continue
-                if re.match('[^0-9]', field_value) \
-                    or field_value in columns_as_category_enforced:
-                    print(revert_indexing_column_cat(col_idx, field_value))
+            if line and ',' in line and 'User_ID' not in line :
+                fields = line.strip().split(",")
+                for col_idx, field_value in enumerate(fields):
+                    if len(fields) < 10:
+                        continue
+                    if re.match('[^0-9]', field_value) \
+                        or col_idx in columns_as_category_enforced:
+                        print(revert_indexing_column_cat(col_idx, field_value))
             line = sys.stdin.readline()
     except "end of file":
         return None
