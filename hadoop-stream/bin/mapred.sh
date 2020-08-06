@@ -20,19 +20,20 @@ tar cf ./target/distributive-files.tar ./mappers/* ./reducers/*
 
 echo "### Uniq category values for each column"
 python mappers/categorical-stat-0-mapper.py
-'''
-1000004,P00184942,M,46-50,7,B,2,1,1,8,17,19215
+# '''
+# 1000004,P00184942,M,46-50,7,B,2,1,1,8,17,19215
+# 1000004,P00184942,M,55+,7,B,4+,1,1,8,17,19215
 
-'''
+# '''
 python reducers/categorical-stat-0-reducer.py
-'''
-Manual enter \t
-0__A    0
-0__A    0
-0__B    0
-1__P00001   1
+# '''
+# Manual enter \t
+# 0__A    0
+# 0__A    0
+# 0__B    0
+# 1__P00001   1
 
-'''
+# '''
 
 # hadoop fs -rm -r /machine-learning-final/archives
 # hadoop fs -mkdir -p /machine-learning-final/archives
@@ -54,9 +55,10 @@ echo "### Encode category with number representation"
 # /machine-learning-final/output/part-r-00000
 
 python ./mappers/categorical-stat-1-mapper.py
-'''
-    1000004,P00184942,M,46-50,7,B,2,1,1,8,17,19215
-'''
+# '''
+#   1000004,P00184942,M,46-50,7,B,2,1,1,8,17,19215
+#   1000004,P00184942,M,55+,7,B,4+,1,1,8,17,19215
+# '''
 
 hadoop fs -rm -r /machine-learning-final/output-1
 $HADOOP_HOME/bin/mapred streaming \
@@ -65,6 +67,8 @@ $HADOOP_HOME/bin/mapred streaming \
     -output "/machine-learning-final/output-1" \
     -mapper "categorical-stat-1-mapper.py"
 
-rm column_encoder_definition.txt
+#rm column_encoder_definition.txt
 hadoop fs -head "/machine-learning-final/output-1/part-00000"
 hadoop fs -getmerge /machine-learning-final/output-1/part-00000 ./target/hadoop_encoded.csv
+echo 'User_ID,Product_ID,Gender,Age,Occupation,City_Category,Stay_In_Current_City_Years,Marital_Status,Product_Category_1,Product_Category_2,Product_Category_3,Purchase' > ./target/hadoop_encoded_head.csv
+cat ./target/hadoop_encoded.csv >> ./target/hadoop_encoded_head.csv
