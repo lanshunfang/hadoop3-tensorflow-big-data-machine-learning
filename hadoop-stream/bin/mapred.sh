@@ -26,7 +26,7 @@ hadoop fs -rm -r /machine-learning-final/output-0
 #     -archives hdfs://localhost:9000/machine-learning-final/archives/distributive-files.tar \
 $HADOOP_HOME/bin/mapred streaming \
     -files ./mappers/categorical-stat-0-mapper.py,./reducers/categorical-stat-0-reducer.py \
-    -D mapreduce.job.reduces=1 \
+    -D mapreduce.job.reduces=0 \
     -input "/machine-learning-final/train.csv" \
     -output "/machine-learning-final/output-0" \
     -mapper "categorical-stat-0-mapper.py" \
