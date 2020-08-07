@@ -92,7 +92,7 @@ output=output-2
 hadoop fs -rm -r /machine-learning-final/${output}
 $HADOOP_HOME/bin/mapred streaming \
     -files ./mappers/identity-mapper-reducer.py,./reducers/min-max-scale-reducer.py \
-    -input "/machine-learning-final/${output}/part-00000"  \
+    -input "/machine-learning-final/output-1/part-00000"  \
     -output "/machine-learning-final/${output}" \
     -mapper "identity-mapper-reducer.py" \
     -reducer "min-max-scale-reducer.py"
@@ -100,11 +100,11 @@ $HADOOP_HOME/bin/mapred streaming \
 hadoop fs -head "/machine-learning-final/${output}/part-00000"
 hadoop fs -get /machine-learning-final/${output}/part-00000 ./min_max.json
 
-python ./mappers/min-max-scale-1-mapper.py
+python ./mappers/min-max-scale-mapper.py
 # 0,1679,0,0,2,0,2,0,18,,0,7887	
 # 0,1735,0,0,2,0,2,0,13,4,0,10872	
 # 0,1745,0,0,2,0,2,0,0,8,8,19219
-cat target/hadoop_category_encoded.csv | python ./mappers/min-max-scale-1-mapper.py
+cat target/hadoop_category_encoded.csv | python ./mappers/min-max-scale-mapper.py
 
 python ./mappers/identity-mapper-reducer.py
 # 0.0,0.4807162534435262,0.0,0.0,0.1,0.0,0.5,0.0,0.0,0.5,0.5333333333333333,0.8024969727337259
@@ -113,13 +113,43 @@ head target/hadoop_category_encoded.csv | python ./mappers/identity-mapper-reduc
 output=output-3
 hadoop fs -rm -r /machine-learning-final/${output}
 $HADOOP_HOME/bin/mapred streaming \
-    -files hdfs://localhost:9000/machine-learning-final/output-2/part-00000#min_max.json,./mappers/min-max-scale-1-mapper.py \
+    -files hdfs://localhost:9000/machine-learning-final/output-2/part-00000#min_max.json,./mappers/min-max-scale-mapper.py \
     -input "/machine-learning-final/output-1/part-00000"  \
     -output "/machine-learning-final/${output}" \
-    -mapper "min-max-scale-1-mapper.py" 
+    -mapper "min-max-scale-mapper.py" 
+
+
+
+cat > python missing-data-impute-reducer.py <<EOF 
+0.0,0.0,0.0,0.0,0.1,0.0,0.5,0.0,0.6842105263157895,0.25,0.8,0.5699611674808969	
+0.0,0.012947658402203856,0.0,0.0,0.1,0.0,0.5,0.0,0.6842105263157895,0.25,0.2,0.5697523904964716	
+0.0,0.06859504132231405,0.0,0.0,0.1,0.0,0.5,0.0,0.0,0.125,1.0,0.6437011983798906	
+0.0,0.13911845730027547,0.0,0.0,0.1,0.0,0.5,0.0,0.9473684210526315,1.0625,0.0,0.414965134243601	
+0.0,0.14022038567493114,0.0,0.0,0.1,0.0,0.5,0.0,0.7368421052631579,0.5,0.0,0.11896112572550002
+EOF 
+
+output=output-4
+hadoop fs -rm -r /machine-learning-final/${output}
+$HADOOP_HOME/bin/mapred streaming \
+    -files ./mappers/identity-mapper-reducer.py,./reducers/missing-data-impute-reducer.py \
+    -input "/machine-learning-final/output-3/part-00000"  \
+    -output "/machine-learning-final/${output}" \
+    -mapper "identity-mapper-reducer.py" \
+    -reducer "missing-data-impute-reducer.py"
 
 hadoop fs -head "/machine-learning-final/${output}/part-00000"
-hadoop fs -get /machine-learning-final/${output}/part-00000 ./target/scaled.csv
+hadoop fs -get /machine-learning-final/${output}/part-00000 ./means.json
+
+output=output-5
+hadoop fs -rm -r /machine-learning-final/${output}
+$HADOOP_HOME/bin/mapred streaming \
+    -files hdfs://localhost:9000/machine-learning-final/output-4/part-00000#means.json,./mappers/missing-data-impute-mapper.py \
+    -input "/machine-learning-final/output-3/part-00000"  \
+    -output "/machine-learning-final/${output}" \
+    -mapper "missing-data-impute-mapper.py" 
+
+hadoop fs -head "/machine-learning-final/${output}/part-00000"
+hadoop fs -get /machine-learning-final/${output}/part-00000 ./target/imputed.csv
 echo 'User_ID,Product_ID,Gender,Age,Occupation,City_Category,Stay_In_Current_City_Years,Marital_Status,Product_Category_1,Product_Category_2,Product_Category_3,Purchase' > ./target/training_final.csv
-cat ./target/scaled.csv >> ./target/training_final.csv
+cat ./target/imputed.csv >> ./target/training_final.csv
 head ./target/training_final.csv
