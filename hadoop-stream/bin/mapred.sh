@@ -69,6 +69,29 @@ $HADOOP_HOME/bin/mapred streaming \
 
 #rm column_encoder_definition.txt
 hadoop fs -head "/machine-learning-final/output-1/part-00000"
-hadoop fs -getmerge /machine-learning-final/output-1/part-00000 ./target/hadoop_encoded.csv
-echo 'User_ID,Product_ID,Gender,Age,Occupation,City_Category,Stay_In_Current_City_Years,Marital_Status,Product_Category_1,Product_Category_2,Product_Category_3,Purchase' > ./target/hadoop_encoded_head.csv
-cat ./target/hadoop_encoded.csv >> ./target/hadoop_encoded_head.csv
+hadoop fs -getmerge /machine-learning-final/output-1/part-00000 ./target/hadoop_category_encoded.csv
+
+python ./reducers/min-max-scale-reducer.py
+0,1017,0,0,2,0,2,0,0,2,12,11769	
+0,1027,0,0,2,0,2,0,18,,0,8094	
+0,1088,0,0,2,0,2,0,15,15,0,8839	
+0,1327,0,0,2,0,2,0,18,,0,7882	
+0,1559,0,0,2,0,2,0,18,,0,10003	
+0,1678,0,0,2,0,2,0,18,,0,9946	
+0,1679,0,0,2,0,2,0,18,,0,7887	
+0,1735,0,0,2,0,2,0,13,4,0,10872	
+0,1745,0,0,2,0,2,0,0,8,8,19219	
+0,1996,0,0,2,0,2,0,13,4,0,11039	
+
+hadoop fs -rm -r /machine-learning-final/output-2
+$HADOOP_HOME/bin/mapred streaming \
+    -files ./reducers/min-max-scale-reducer.py \
+    -input "/machine-learning-final/train.csv"  \
+    -output "/machine-learning-final/output-1/part-00000" \
+    -reducer "min-max-scale-reducer.py"
+
+hadoop fs -head "/machine-learning-final/output-2/part-00000"
+
+#echo 'User_ID,Product_ID,Gender,Age,Occupation,City_Category,Stay_In_Current_City_Years,Marital_Status,Product_Category_1,Product_Category_2,Product_Category_3,Purchase' > ./target/hadoop_encoded_head.csv
+#cat ./target/hadoop_encoded.csv >> ./target/hadoop_encoded_head.csv
+#head ./target/hadoop_encoded_head.csv
