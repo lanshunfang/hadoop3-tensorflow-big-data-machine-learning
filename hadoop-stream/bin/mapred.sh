@@ -73,8 +73,6 @@ $HADOOP_HOME/bin/mapred streaming \
 hadoop fs -head "/machine-learning-final/${output}/part-00000"
 hadoop fs -getmerge /machine-learning-final/${output}/part-00000 ./target/hadoop_category_encoded.csv
 
-
-
 python ./mappers/min-max-scale-0-mapper.py
 # 0,1017,0,0,2,0,2,0,0,2,12,11769
 
@@ -100,7 +98,23 @@ $HADOOP_HOME/bin/mapred streaming \
     -reducer "min-max-scale-reducer.py"
 
 hadoop fs -head "/machine-learning-final/${output}/part-00000"
+hadoop fs -get /machine-learning-final/${output}/part-00000 ./min_max.json
 
-#echo 'User_ID,Product_ID,Gender,Age,Occupation,City_Category,Stay_In_Current_City_Years,Marital_Status,Product_Category_1,Product_Category_2,Product_Category_3,Purchase' > ./target/hadoop_encoded_head.csv
-#cat ./target/hadoop_encoded.csv >> ./target/hadoop_encoded_head.csv
-#head ./target/hadoop_encoded_head.csv
+python ./mappers/min-max-scale-1-mapper.py
+# 0,1679,0,0,2,0,2,0,18,,0,7887	
+# 0,1735,0,0,2,0,2,0,13,4,0,10872	
+# 0,1745,0,0,2,0,2,0,0,8,8,19219
+
+output=output-3
+hadoop fs -rm -r /machine-learning-final/${output}
+$HADOOP_HOME/bin/mapred streaming \
+    -files hdfs://localhost:9000/machine-learning-final/output-2/part-00000#min_max.json,./mappers/min-max-scale-1-mapper.py \
+    -input "/machine-learning-final/${output}/part-00000"  \
+    -output "/machine-learning-final/${output}" \
+    -mapper "min-max-scale-1-mapper.py"
+
+hadoop fs -head "/machine-learning-final/${output}/part-00000"
+hadoop fs -get /machine-learning-final/${output}/part-00000 ./target/scaled.csv
+echo 'User_ID,Product_ID,Gender,Age,Occupation,City_Category,Stay_In_Current_City_Years,Marital_Status,Product_Category_1,Product_Category_2,Product_Category_3,Purchase' > ./target/training_final.csv
+cat ./target/scaled.csv >> ./target/training_final.csv
+head ./target/training_final.csv
