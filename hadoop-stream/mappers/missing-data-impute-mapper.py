@@ -12,9 +12,10 @@ def prepare_col_scale_dict():
         means_definition = json.load(f)
 
 def mean_impute(col_idx, col_value):
-    return col_value if col_value else str(means_definition[col_idx].mean)
+    global means_definition
+    return col_value if col_value else str(means_definition[str(col_idx)]['mean'])
 
-def scale_columns(line):
+def impute_missing_data(line):
 
     global means_definition
     fields = line.strip().split(",")
@@ -40,7 +41,7 @@ def main(argv):
         while line and line.strip():
             line = line[:-1]
             if line and ',' in line:
-                print(scale_columns(line))
+                print(impute_missing_data(line))
            
             line = sys.stdin.readline()
     except "end of file":
