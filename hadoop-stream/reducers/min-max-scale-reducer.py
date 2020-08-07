@@ -16,11 +16,12 @@ def find_min_max(line):
     for col_idx, col_val in enumerate(fields):
 
         min_max['min'].setdefault(col_idx, float(sys.maxsize))
-        min_max['max'].setdefault(col_idx, -(float(sys.maxsize) - 1))
+        min_max['max'].setdefault(col_idx, -(float(sys.maxsize - 1)))
 
         if col_val:
-            min_max['min'][col_idx] = min(min_max['min'][col_idx], float(col_val))
-            min_max['max'][col_idx] = max(min_max['max'][col_idx], float(col_val))
+            col_val = float(col_val)
+            min_max['min'][col_idx] = min(min_max['min'][col_idx], col_val)
+            min_max['max'][col_idx] = max(min_max['max'][col_idx], col_val)
 
 def main(argv):
     line = sys.stdin.readline()
