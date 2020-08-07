@@ -73,7 +73,7 @@ $HADOOP_HOME/bin/mapred streaming \
 hadoop fs -head "/machine-learning-final/${output}/part-00000"
 hadoop fs -getmerge /machine-learning-final/${output}/part-00000 ./target/hadoop_category_encoded.csv
 
-python ./mappers/min-max-scale-0-mapper.py
+python ./mappers/identity-mapper-reducer.py
 # 0,1017,0,0,2,0,2,0,0,2,12,11769
 
 python ./reducers/min-max-scale-reducer.py
@@ -91,10 +91,10 @@ python ./reducers/min-max-scale-reducer.py
 output=output-2
 hadoop fs -rm -r /machine-learning-final/${output}
 $HADOOP_HOME/bin/mapred streaming \
-    -files ./mappers/min-max-scale-0-mapper.py,./reducers/min-max-scale-reducer.py \
+    -files ./mappers/identity-mapper-reducer.py,./reducers/min-max-scale-reducer.py \
     -input "/machine-learning-final/${output}/part-00000"  \
     -output "/machine-learning-final/${output}" \
-    -mapper "min-max-scale-0-mapper.py" \
+    -mapper "identity-mapper-reducer.py" \
     -reducer "min-max-scale-reducer.py"
 
 hadoop fs -head "/machine-learning-final/${output}/part-00000"
@@ -104,14 +104,19 @@ python ./mappers/min-max-scale-1-mapper.py
 # 0,1679,0,0,2,0,2,0,18,,0,7887	
 # 0,1735,0,0,2,0,2,0,13,4,0,10872	
 # 0,1745,0,0,2,0,2,0,0,8,8,19219
+cat target/hadoop_category_encoded.csv | python ./mappers/min-max-scale-1-mapper.py
+
+python ./mappers/identity-mapper-reducer.py
+# 0.0,0.4807162534435262,0.0,0.0,0.1,0.0,0.5,0.0,0.0,0.5,0.5333333333333333,0.8024969727337259
+head target/hadoop_category_encoded.csv | python ./mappers/identity-mapper-reducer.py 
 
 output=output-3
 hadoop fs -rm -r /machine-learning-final/${output}
 $HADOOP_HOME/bin/mapred streaming \
     -files hdfs://localhost:9000/machine-learning-final/output-2/part-00000#min_max.json,./mappers/min-max-scale-1-mapper.py \
-    -input "/machine-learning-final/${output}/part-00000"  \
+    -input "/machine-learning-final/output-1/part-00000"  \
     -output "/machine-learning-final/${output}" \
-    -mapper "min-max-scale-1-mapper.py"
+    -mapper "min-max-scale-1-mapper.py" 
 
 hadoop fs -head "/machine-learning-final/${output}/part-00000"
 hadoop fs -get /machine-learning-final/${output}/part-00000 ./target/scaled.csv
