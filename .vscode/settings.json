@@ -1,3 +1,10 @@
 {
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "cSpell.words": [
+        "hdfs",
+        "jupyter",
+        "keras",
+        "pyspark",
+        "tensorflow"
+    ]
 }

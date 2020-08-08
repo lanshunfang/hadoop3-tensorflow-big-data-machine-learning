@@ -5,7 +5,7 @@ Hadoop is capable of processing big data via MapReduce YARN framework in commodi
 In the profession of machine learning, when the data is too large, traditional data-processing may become unrealistic thus it requires the effort of big data framework.
 
 ## Keyword:
-MapReduce, Hadoop, Hadoop Streaming, HDFS, YARN, Machine Learning, Deep Learning, Tensorflow, Distributive Training
+MapReduce, Hadoop, Hadoop Streaming, HDFS, YARN, Machine Learning, Deep Learning, Anaconda, Jupyter Lab, Keras, Tensorflow, Distributive Training
 <!-- Apache Spark -->
 
 ## Motivation:
@@ -20,6 +20,7 @@ MapReduce, Hadoop, Hadoop Streaming, HDFS, YARN, Machine Learning, Deep Learning
   - Data scaling
   - Missing Data imputation
   - Store Data as TFRecords files via Tensorflow TFRecordWriter
+- Use Keras over Tensorflow and HDFS to train our network
 
 ## Prerequisites
 - macOS Catalina as the development machine
@@ -34,12 +35,14 @@ MapReduce, Hadoop, Hadoop Streaming, HDFS, YARN, Machine Learning, Deep Learning
 # Upgrade python to python3
 brew upgrade python
 brew link python
-# install tensorflow dependency
+# intall tensorflow dependency
 pip3 install tensorflow
+
 ```
 
 ### Data preprocessing steps
-> All scripts listed are captured in file `./bin/mapred.sh`
+
+Screenshots
 
 ## Deep Neural Network Training
 
