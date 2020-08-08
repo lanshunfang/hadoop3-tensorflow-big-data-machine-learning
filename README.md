@@ -38,13 +38,22 @@ MapReduce, Hadoop, HDFS, YARN, Pig,  Machine Learning, Deep Learning, Anaconda, 
 
 ### Presequites
 - macOS Catalina as the development machine
-- Anaconda is already installed
-- Homebrew, Java8, git is installed
-- A global variable `JAVA_HOME_8` is pointing to Java8
-- Apache Hadoop and Apache Pig is setup
+- Homebrew
+- Hadoop is setup with Java 8 as `JAVA_HOME`
+
+###
 
 ### Install required packages
+#### Hadoop stream dependencies
+```bash
+# Upgrade python to python3
+brew upgrade python
+brew link python
+pip3 install tensorflow
+# intall tensorflow dependency
 
+```
+#### Conda
 ```bash
 # Create a conda env
 conda create --name big_data_machine_learning python=3.7 --channel conda-forge

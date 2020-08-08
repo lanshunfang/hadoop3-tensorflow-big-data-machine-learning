@@ -182,6 +182,7 @@ $HADOOP_HOME/bin/mapred streaming \
     -files ./mappers/identity-mapper-reducer.py,./reducers/tf-records-reducer.py \
     -input "/machine-learning-final/output-5/part-00000"  \
     -output "/machine-learning-final/${output}" \
-    -mapper "identity-mapper-reducer.py" \
-    -reducer "tf-records-reducer.py"
+    -mapper "python3 identity-mapper-reducer.py" \
+    -reducer "python3 tf-records-reducer.py"
 
+hadoop fs -du -s -h /machine-learning-final/tfrecords
