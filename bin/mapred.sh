@@ -169,3 +169,19 @@ hadoop fs -get /machine-learning-final/${output}/part-00000 ./target/imputed.csv
 echo 'User_ID,Product_ID,Gender,Age,Occupation,City_Category,Stay_In_Current_City_Years,Marital_Status,Product_Category_1,Product_Category_2,Product_Category_3,Purchase' > ./target/training_final.csv
 cat ./target/imputed.csv >> ./target/training_final.csv
 head ./target/training_final.csv
+
+
+cat  <<- EOF  | python ./reducers/tf-records-reducer.py
+0.0,0.0,0.0,0.0,0.1,0.0,0.5,0.0,0.6842105263157895,0.25,0.8,0.5699611674808969	
+0.0,0.012947658402203856,0.0,0.0,0.1,0.0,0.5,0.0,0.6842105263157895,0.25,0.2,0.5697523904964716	
+0.0,0.06859504132231405,0.0,0.0,0.1,0.0,0.5,0.0,0.0,0.125,1.0,0.6437011983798906	
+EOF
+output=output-final
+hadoop fs -rm -r /machine-learning-final/${output}
+$HADOOP_HOME/bin/mapred streaming \
+    -files ./mappers/identity-mapper-reducer.py,./reducers/tf-records-reducer.py \
+    -input "/machine-learning-final/output-5/part-00000"  \
+    -output "/machine-learning-final/${output}" \
+    -mapper "identity-mapper-reducer.py" \
+    -reducer "tf-records-reducer.py"
+

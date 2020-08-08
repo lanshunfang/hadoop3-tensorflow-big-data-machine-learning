@@ -26,7 +26,7 @@ MapReduce, Hadoop, HDFS, YARN, Pig,  Machine Learning, Deep Learning, Anaconda, 
 - We will use Hadoop mapred Streaming utility to perform data preprocessing over Hadoop MapReduce via Python
   - Missing Data analisis with imputing
   - Categorical data transformation
-  - Data scaling (normalization)
+  - Data scaling
 - Store Data as TFRecords files via Tensorflow TFRecordWriter
 - Use Keras over Tensorflow and HDFS to train our network in GPU (via plaidml)
 - (Optional) Rewrite the MapReduce python script in Spark and compare the speed then use AWS S3/Spark/Tensorflow stack to train the data
@@ -109,6 +109,9 @@ grunt> loaded_data = LOAD 'hdfs://localhost:9000/tmp/mock.csv' USING PigStorage(
 - Running Hadoop MapReduce with Python: https://www.michael-noll.com/tutorials/writing-an-hadoop-mapreduce-program-in-python/
 - https://stackoverflow.com/questions/54381036/which-is-better-when-reading-from-remote-hosts-like-hdfs-tfrecorddatasetnum-pa
 - https://stackoverflow.com/questions/41402332/tensorflow-create-a-tfrecords-file-from-csv
+- https://partners-intl.aliyun.com/help/doc-detail/53928.htm
+- https://stackoverflow.com/questions/26606128/how-to-save-a-file-in-hadoop-with-python
+- https://blog.csdn.net/cdj0311/article/details/105991138
 
 ### Amazon Elastic MapReduce over Hadoop (Amazon EMR) with S3/Spark/Tensorflow
 - https://aws.amazon.com/about-aws/whats-new/2018/09/support-for-tensorflow-s3-select-with-spark-on-amazon-emr-release-517/
