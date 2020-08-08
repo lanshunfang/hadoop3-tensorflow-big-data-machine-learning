@@ -1,50 +1,24 @@
 
-# Machine Learning in Big Data Engine
-Hadoop is capable of processing big data via MapReduce YARN framework in commodity machine clusters.
-
-In the profession of machine learning, when the data is too large, traditional data-processing may become unrealistic thus it requires the effort of big data framework.
+# WIP: Distributive Machine Learning with Hadoop and Tensorflow
+This is a sub-project of `../README.md`
+WIP
 
 ## Keyword:
-MapReduce, Hadoop, Hadoop Streaming, HDFS, YARN, Machine Learning, Deep Learning, Anaconda, Jupyter Lab, Keras, Tensorflow, Distributive Training
+MapReduce, Hadoop, HDFS, YARN, Machine Learning, Deep Learning, Anaconda, Jupyter Lab, Keras, Tensorflow, Distributive Training
 <!-- Apache Spark -->
 
 ## Motivation:
-- The training data feeding to the Deep Neural Network (DNN) may be too big to be handled by python science tooling stack
-- The data preprocessing like feature engineering, categorical encoding, missing value imputation may not be scalable in a regular single machine.
+- WIP 
 
 ## Summary
-- This project is trying to stand at the standpoint of a machine learning developer who wants to utilize Big data framework to ease their daily work
-- We will use Hadoop Streaming utility to perform training data preprocessing in Hadoop MapReduce
-  - We will use python scripts in Hadoop Streaming as python is the major scripting language for machine learning which has thorough data science stack support
-  - Categorical data encoding
-  - Data scaling
-  - Missing Data imputation
-  - Store Data as TFRecords files via Tensorflow TFRecordWriter
-- Use Keras over Tensorflow and HDFS to train our network
+- WIP
 
 ## Prerequisites
-- macOS Catalina as the development machine
-- Homebrew
-- Hadoop is setup with `Java 8` as `JAVA_HOME` and `${HADOOP_HOME}` in env variables
-  - e.g. `export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home`
-  - e.g. `export HADOOP_HOME=/usr/local/Cellar/hadoop/3.3.0/libexec`
-
-## Data preprocessing with Hadoop Streaming
-### Install required packages
-```bash
-# Upgrade python to python3
-brew upgrade python
-brew link python
-# intall tensorflow dependency
-pip3 install tensorflow
-
-```
-
-### Data preprocessing steps
-
-Screenshots
+- WIP
 
 ## Deep Neural Network Training
+
+WIP
 
 ## Install required packages for running Deep Neural Network
 ```bash
@@ -95,22 +69,6 @@ grunt> loaded_data = LOAD 'hdfs://localhost:9000/tmp/mock.csv' USING PigStorage(
 
 # Reference:
 
-### TMP
-- https://www.slideshare.net/ssuser72f42a/scaling-deep-learning-on-hadoop-at-linkedin
-- https://engineering.linkedin.com/blog/2018/09/open-sourcing-tony--native-support-of-tensorflow-on-hadoop
-- https://www.tensorflow.org/guide/distributed_training
-
-
-### Source Data
-- https://www.kaggle.com/sdolezel/black-friday
-- Hadoop Streaming
-  - https://hadoop.apache.org/docs/r3.3.0/hadoop-streaming/HadoopStreaming.html
-  - https://nancyyanyu.github.io/posts/f53c188b/
-
-
-### Hadoop streaming with Python
-- Hadoop Streaming: https://hadoop.apache.org/docs/current/hadoop-streaming/HadoopStreaming.html
-- Running Hadoop MapReduce with Python: https://www.michael-noll.com/tutorials/writing-an-hadoop-mapreduce-program-in-python/
 
 ### HDFS with Tensorflow
 - https://stackoverflow.com/questions/54381036/which-is-better-when-reading-from-remote-hosts-like-hdfs-tfrecorddatasetnum-pa

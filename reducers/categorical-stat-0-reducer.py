@@ -39,7 +39,7 @@ def main(argv):
         while line and line.strip():
             line = line[:-1]
             # 0__A  0   0   0   0   0
-            if line:
+            if line and line.strip():
                 key_value_list = line.split('\t')
                 restore_indexing_column_cat(key_value_list)
             line = sys.stdin.readline()

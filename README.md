@@ -38,72 +38,149 @@ brew link python
 pip3 install tensorflow
 ```
 
-### Data preprocessing steps
+### Categorical Data encoding
 > All scripts listed are captured in file `./bin/mapred.sh`
 
-## Deep Neural Network Training
-
-## Install required packages for running Deep Neural Network
-```bash
-brew install bash
-# Create a conda env
-conda create --name big_data_machine_learning python=3.7 --channel conda-forge
-conda activate big_data_machine_learning
-
-# Install all packages in conda
-conda install -c conda-forge jupyterlab nodejs pandas matplotlib seaborn numpy scipy scikit-learn tensorflow
-
-### Configure Tensorflow
-Refer to the [tutorial](https://github.com/tensorflow/examples/blob/master/community/en/docs/deploy/hadoop.md)
-```bash
-bash
-# run the script in bash-5.0$ 
-source ${HADOOP_HOME}/libexec/hadoop-config.sh
-export CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob):${CLASSPATH}
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/server
-
-### Start Jupyter Lab
+#### Summarize all categorical values for each column
 
 ```bash
-conda activate big_data_machine_learning
-# Assume you are in the git repo root
-cd ./jupyter-notebook
-jupyter lab
-# Wait until the default browser opens Jupyter Lab at http://localhost:8888/lab or http://localhost:8889/lab
-# Spark Master UI is running at http://localhost:8080/
+
+output=output-0
+hadoop fs -rm -r /machine-learning-final/${output}
+$HADOOP_HOME/bin/mapred streaming \
+    -files ./mappers/categorical-stat-0-mapper.py,./reducers/categorical-stat-0-reducer.py \
+    -input "/machine-learning-final/train.csv" \
+    -output /machine-learning-final/${output} \
+    -mapper "categorical-stat-0-mapper.py" \
+    -reducer "categorical-stat-0-reducer.py"
+
+```
+![screenshot](doc/images/2020-08-08-13-27-40.png)
+
+```bash
+hadoop fs -head "/machine-learning-final/${output}/part-00000"
+rm column_encoder_definition.txt
+hadoop fs -get "/machine-learning-final/${output}/part-00000" column_encoder_definition.txt
+```
+![screenshot](doc/images/2020-08-08-13-29-58.png)
+
+#### Encode category with number representation (Ordinal/Integer Encoder)
+```bash
+output=output-1
+hadoop fs -rm -r /machine-learning-final/${output}
+$HADOOP_HOME/bin/mapred streaming \
+    -files hdfs://localhost:9000/machine-learning-final/output-0/part-00000#column_encoder_definition.txt,./mappers/categorical-stat-1-mapper.py \
+    -input "/machine-learning-final/train.csv"  \
+    -output "/machine-learning-final/${output}" \
+    -mapper "categorical-stat-1-mapper.py"
+
+#rm column_encoder_definition.txt
+hadoop fs -head "/machine-learning-final/${output}/part-00000"
+rm ./target/hadoop_category_encoded.csv
+hadoop fs -get /machine-learning-final/${output}/part-00000 ./target/hadoop_category_encoded.csv
+
 ```
 
+![screenshot](doc/images/2020-08-08-13-34-13.png)
 
-## Main Steps
+#### Summarize min/max values per each column
+```bash
+output=output-2
+hadoop fs -rm -r /machine-learning-final/${output}
+$HADOOP_HOME/bin/mapred streaming \
+    -files ./mappers/identity-mapper-reducer.py,./reducers/min-max-scale-reducer.py \
+    -input "/machine-learning-final/output-1/part-00000"  \
+    -output "/machine-learning-final/${output}" \
+    -mapper "identity-mapper-reducer.py" \
+    -reducer "min-max-scale-reducer.py"
 
-### Normalization data into [0, 1]
-```pig
-grunt> loaded_data = LOAD 'hdfs://localhost:9000/tmp/mock.csv' USING PigStorage(',');
+hadoop fs -head "/machine-learning-final/${output}/part-00000"
+rm ./min_max.json
+hadoop fs -get /machine-learning-final/${output}/part-00000 ./min_max.json
+```
+![screenshot](doc/images/2020-08-08-13-39-46.png)
+
+
+#### Perform scaling according to the min/max values
+```bash
+output=output-3
+hadoop fs -rm -r /machine-learning-final/${output}
+$HADOOP_HOME/bin/mapred streaming \
+    -files hdfs://localhost:9000/machine-learning-final/output-2/part-00000#min_max.json,./mappers/min-max-scale-mapper.py \
+    -input "/machine-learning-final/output-1/part-00000"  \
+    -output "/machine-learning-final/${output}" \
+    -mapper "min-max-scale-mapper.py" 
+
+hadoop fs -head "/machine-learning-final/${output}/part-00000"
 ```
 
-### Load Chunk Data from HDFS into Tensorflow
+![screenshot](doc/images/2020-08-08-13-44-24.png)
 
+### Impute missing data with mean
+#### Summarize mean values for each column
+
+```bash
+output=output-4
+hadoop fs -rm -r /machine-learning-final/${output}
+$HADOOP_HOME/bin/mapred streaming \
+    -files ./mappers/identity-mapper-reducer.py,./reducers/missing-data-impute-reducer.py \
+    -input "/machine-learning-final/output-3/part-00000"  \
+    -output "/machine-learning-final/${output}" \
+    -mapper "identity-mapper-reducer.py" \
+    -reducer "missing-data-impute-reducer.py"
+
+hadoop fs -head "/machine-learning-final/${output}/part-00000"
+rm ./means.json
+hadoop fs -get /machine-learning-final/${output}/part-00000 ./means.json
+```
+
+![screenshot](doc/images/2020-08-08-13-48-01.png)
+
+#### Impute missing data with mean value for each column
+
+```bash
+
+output=output-5
+hadoop fs -rm -r /machine-learning-final/${output}
+$HADOOP_HOME/bin/mapred streaming \
+    -files hdfs://localhost:9000/machine-learning-final/output-4/part-00000#means.json,./mappers/missing-data-impute-mapper.py \
+    -input "/machine-learning-final/output-3/part-00000"  \
+    -output "/machine-learning-final/${output}" \
+    -mapper "missing-data-impute-mapper.py" 
+
+hadoop fs -head "/machine-learning-final/${output}/part-00000"
+rm ./target/imputed.csv
+hadoop fs -get /machine-learning-final/${output}/part-00000 ./target/imputed.csv
+echo 'User_ID,Product_ID,Gender,Age,Occupation,City_Category,Stay_In_Current_City_Years,Marital_Status,Product_Category_1,Product_Category_2,Product_Category_3,Purchase' > ./target/training_final.csv
+cat ./target/imputed.csv >> ./target/training_final.csv
+head ./target/training_final.csv
+```
+
+![](doc/images/2020-08-08-13-52-04.png)
+
+
+### Save CSV data into Tensorflow TfRecords
+```bash
+
+output=output-final
+hadoop fs -rm -r /machine-learning-final/${output}
+$HADOOP_HOME/bin/mapred streaming \
+    -files ./mappers/identity-mapper-reducer.py,./reducers/tf-records-reducer.py \
+    -input "/machine-learning-final/output-5/part-00000"  \
+    -output "/machine-learning-final/${output}" \
+    -mapper "python3 identity-mapper-reducer.py" \
+    -reducer "python3 tf-records-reducer.py"
+
+hadoop fs -du -s -h /machine-learning-final/tfrecords
+```
+![screenshot](doc/images/2020-08-08-13-56-24.png)
+
+![final-screenshot](doc/images/2020-08-08-13-57-56.png)
 
 # What's Next
-* In addition to the solution, Tensorflow supports [distributive training](https://www.tensorflow.org/guide/distributed_training).
-* We could leverage the feature and install Tensorflow module in every node of our Hadoop cluster, exposing service for tensorflow master node. It will scale the training job horizontally just like data preprocessing in Hadoop and support node failure recovery.
-* [Amazon Elastic MapReduce over Hadoop (Amazon EMR)](https://aws.amazon.com/about-aws/whats-new/2018/09/support-for-tensorflow-s3-select-with-spark-on-amazon-emr-release-517/) enables the deployment of the solution over AWS.
-* [Hopsworks](https://github.com/logicalclocks/hopsworks) also brings the integration between Big Data and Machine Learning frameworks which simplifies scaling data-intensive AI training, over both On-Premises and Cloud.
+- After data preprocessing, now we could start Tensorflow distributive training. The sub-project is hosted in `./distributive-training/`
 
 # Reference:
-
-### TMP
-- https://www.slideshare.net/ssuser72f42a/scaling-deep-learning-on-hadoop-at-linkedin
-- https://engineering.linkedin.com/blog/2018/09/open-sourcing-tony--native-support-of-tensorflow-on-hadoop
-- https://www.tensorflow.org/guide/distributed_training
-
-
-### Source Data
-- https://www.kaggle.com/sdolezel/black-friday
-- Hadoop Streaming
-  - https://hadoop.apache.org/docs/r3.3.0/hadoop-streaming/HadoopStreaming.html
-  - https://nancyyanyu.github.io/posts/f53c188b/
-
 
 ### Hadoop streaming with Python
 - Hadoop Streaming: https://hadoop.apache.org/docs/current/hadoop-streaming/HadoopStreaming.html
@@ -115,12 +192,6 @@ grunt> loaded_data = LOAD 'hdfs://localhost:9000/tmp/mock.csv' USING PigStorage(
 - https://partners-intl.aliyun.com/help/doc-detail/53928.htm
 - https://stackoverflow.com/questions/26606128/how-to-save-a-file-in-hadoop-with-python
 - https://blog.csdn.net/cdj0311/article/details/105991138
-- https://stackoverflow.com/questions/48698286/tensorflow-dataset-api-with-hdfs/48715720
-- https://github.com/tensorflow/examples/blob/master/community/en/docs/deploy/hadoop.md
-- https://medium.com/@moritzkrger/speeding-up-keras-with-tfrecord-datasets-5464f9836c36
-
-### Amazon Elastic MapReduce over Hadoop (Amazon EMR) with S3/Spark/Tensorflow
-- https://aws.amazon.com/about-aws/whats-new/2018/09/support-for-tensorflow-s3-select-with-spark-on-amazon-emr-release-517/
 
 
 

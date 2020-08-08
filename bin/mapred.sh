@@ -4,41 +4,36 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $DIR
 cd ..
 
+# JAVA_HOME_8 = /Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home
+
 export JAVA_HOME=$JAVA_HOME_8 
 export PATH=${JAVA_HOME}/bin:$PATH 
+
+# Start all Hadoop services
 start-all.sh
-#mr-jobhistory-daemon.sh start historyserver
 jps
-# kill `jps | cut -d " " -f 1`
 
+echo "### Categorical Data encoding"
 
-echo "## Analize Categorical Data"
-#rm ./target/distributive-files.tar.gz
-rm ./target/distributive-files.tar
-#tar zcf ./target/distributive-files.tar.gz ./mappers ./reducers
-tar cf ./target/distributive-files.tar ./mappers/* ./reducers/*
+echo "#### Summerize all categorical values for each column"
 
-echo "### Uniq category values for each column"
-python mappers/categorical-stat-0-mapper.py
-# '''
-# 1000004,P00184942,M,46-50,7,B,2,1,1,8,17,19215
-# 1000004,P00184942,M,55+,7,B,4+,1,1,8,17,19215
+# Test script
+cat <<-EOF | python3 mappers/categorical-stat-0-mapper.py
+1000004,P00184942,M,46-50,7,B,2,1,1,8,17,19215
+1000004,P00184942,M,55+,7,B,4+,1,1,8,17,19215
 
-# '''
-python reducers/categorical-stat-0-reducer.py
-# '''
-# Manual enter \t
-# 0__A    0
-# 0__A    0
-# 0__B    0
-# 1__P00001   1
+EOF
 
-# '''
+# Test script
+TAB="$(printf '\t')"
+cat <<-EOF | python3 reducers/categorical-stat-0-reducer.py
+0__A${TAB}0
+0__A${TAB}0
+0__B${TAB}0
+1__P00001${TAB}1
 
-# hadoop fs -rm -r /machine-learning-final/archives
-# hadoop fs -mkdir -p /machine-learning-final/archives
-# hadoop fs -put ./target/distributive-files.tar /machine-learning-final/archives
-#     -archives hdfs://localhost:9000/machine-learning-final/archives/distributive-files.tar \
+EOF
+
 output=output-0
 hadoop fs -rm -r /machine-learning-final/${output}
 $HADOOP_HOME/bin/mapred streaming \
@@ -48,18 +43,18 @@ $HADOOP_HOME/bin/mapred streaming \
     -mapper "categorical-stat-0-mapper.py" \
     -reducer "categorical-stat-0-reducer.py"
 
-hadoop fs -head "/machine-learning-final/${output}/part-00000"
-hadoop fs -get "/machine-learning-final/${output}/part-00000"
-rm column_encoder_definition.txt
-mv part-00000 column_encoder_definition.txt
-echo "### Encode category with number representation"
-# /machine-learning-final/output/part-r-00000
 
-python ./mappers/categorical-stat-1-mapper.py
-# '''
-#   1000004,P00184942,M,46-50,7,B,2,1,1,8,17,19215
-#   1000004,P00184942,M,55+,7,B,4+,1,1,8,17,19215
-# '''
+hadoop fs -head "/machine-learning-final/${output}/part-00000"
+rm column_encoder_definition.txt
+hadoop fs -get "/machine-learning-final/${output}/part-00000" column_encoder_definition.txt
+
+echo "#### Encode category with number representation (Ordinal/Integer Encoder)"
+
+cat <<-EOF | python3 ./mappers/categorical-stat-1-mapper.py
+1000004,P00184942,M,46-50,7,B,2,1,1,8,17,19215
+1000004,P00184942,M,55+,7,B,4+,1,1,8,17,19215
+
+EOF
 
 output=output-1
 hadoop fs -rm -r /machine-learning-final/${output}
@@ -71,23 +66,31 @@ $HADOOP_HOME/bin/mapred streaming \
 
 #rm column_encoder_definition.txt
 hadoop fs -head "/machine-learning-final/${output}/part-00000"
-hadoop fs -getmerge /machine-learning-final/${output}/part-00000 ./target/hadoop_category_encoded.csv
+hadoop fs -get /machine-learning-final/${output}/part-00000 ./target/hadoop_category_encoded.csv
 
-python ./mappers/identity-mapper-reducer.py
-# 0,1017,0,0,2,0,2,0,0,2,12,11769
+echo "### Scale data into [0,1]"
 
-python ./reducers/min-max-scale-reducer.py
-# 0,1017,0,0,2,0,2,0,0,2,12,11769	
-# 0,1027,0,0,2,0,2,0,18,,0,8094	
-# 0,1088,0,0,2,0,2,0,15,15,0,8839	
-# 0,1327,0,0,2,0,2,0,18,,0,7882	
-# 0,1559,0,0,2,0,2,0,18,,0,10003	
-# 0,1678,0,0,2,0,2,0,18,,0,9946	
-# 0,1679,0,0,2,0,2,0,18,,0,7887	
-# 0,1735,0,0,2,0,2,0,13,4,0,10872	
-# 0,1745,0,0,2,0,2,0,0,8,8,19219	
-# 0,1996,0,0,2,0,2,0,13,4,0,11039	
+# Test  data
+cat <<-EOF | python3 ./mappers/identity-mapper-reducer.py
+0,1017,0,0,2,0,2,0,0,2,12,11769
 
+EOF
+
+cat <<-EOF | python3  ./reducers/min-max-scale-reducer.py
+0,1017,0,0,2,0,2,0,0,2,12,11769	
+0,1027,0,0,2,0,2,0,18,,0,8094	
+0,1088,0,0,2,0,2,0,15,15,0,8839	
+0,1327,0,0,2,0,2,0,18,,0,7882	
+0,1559,0,0,2,0,2,0,18,,0,10003	
+0,1678,0,0,2,0,2,0,18,,0,9946	
+0,1679,0,0,2,0,2,0,18,,0,7887	
+0,1735,0,0,2,0,2,0,13,4,0,10872	
+0,1745,0,0,2,0,2,0,0,8,8,19219	
+0,1996,0,0,2,0,2,0,13,4,0,11039	
+
+EOF
+
+echo "#### Summarize min/max values per each column"
 output=output-2
 hadoop fs -rm -r /machine-learning-final/${output}
 $HADOOP_HOME/bin/mapred streaming \
@@ -98,17 +101,16 @@ $HADOOP_HOME/bin/mapred streaming \
     -reducer "min-max-scale-reducer.py"
 
 hadoop fs -head "/machine-learning-final/${output}/part-00000"
+rm ./min_max.json
 hadoop fs -get /machine-learning-final/${output}/part-00000 ./min_max.json
 
-python ./mappers/min-max-scale-mapper.py
-# 0,1679,0,0,2,0,2,0,18,,0,7887	
-# 0,1735,0,0,2,0,2,0,13,4,0,10872	
-# 0,1745,0,0,2,0,2,0,0,8,8,19219
-cat target/hadoop_category_encoded.csv | python ./mappers/min-max-scale-mapper.py
+echo "#### Perform scaling according to the min/max values"
+cat <<-EOF | python3  ./mappers/min-max-scale-mapper.py
+0,1679,0,0,2,0,2,0,18,,0,7887	
+0,1735,0,0,2,0,2,0,13,4,0,10872	
+0,1745,0,0,2,0,2,0,0,8,8,19219
 
-python ./mappers/identity-mapper-reducer.py
-# 0.0,0.4807162534435262,0.0,0.0,0.1,0.0,0.5,0.0,0.0,0.5,0.5333333333333333,0.8024969727337259
-head target/hadoop_category_encoded.csv | python ./mappers/identity-mapper-reducer.py 
+EOF
 
 output=output-3
 hadoop fs -rm -r /machine-learning-final/${output}
@@ -118,7 +120,12 @@ $HADOOP_HOME/bin/mapred streaming \
     -output "/machine-learning-final/${output}" \
     -mapper "min-max-scale-mapper.py" 
 
+hadoop fs -head "/machine-learning-final/${output}/part-00000"
 
+
+echo "### Impute missing data with mean"
+
+echo "#### Summarize mean values for each column"
 
 cat  <<- EOF  | python ./reducers/missing-data-impute-reducer.py 
 0.0,0.0,0.0,0.0,0.1,0.0,0.5,0.0,0.6842105263157895,0.25,0.8,0.5699611674808969	
@@ -127,7 +134,6 @@ cat  <<- EOF  | python ./reducers/missing-data-impute-reducer.py
 0.0,0.13911845730027547,0.0,0.0,0.1,0.0,0.5,0.0,0.9473684210526315,1.0625,0.0,0.414965134243601	
 0.0,0.14022038567493114,0.0,0.0,0.1,0.0,0.5,0.0,0.7368421052631579,0.5,0.0,0.11896112572550002
 
-# Manual enter EOF
 EOF 
 
 output=output-4
@@ -140,8 +146,10 @@ $HADOOP_HOME/bin/mapred streaming \
     -reducer "missing-data-impute-reducer.py"
 
 hadoop fs -head "/machine-learning-final/${output}/part-00000"
+rm ./means.json
 hadoop fs -get /machine-learning-final/${output}/part-00000 ./means.json
 
+echo "#### Impute missing data with mean value for each column"
 
 cat  <<- EOF  | python ./mappers/missing-data-impute-mapper.py
 ,,0.18512396694214875,0.0,0.0,0.1,0.0,0.5,0.0,0.6842105263157895,,0.0,0.34949267192784667	
@@ -153,7 +161,6 @@ cat  <<- EOF  | python ./mappers/missing-data-impute-mapper.py
 0.0,0.2801652892561983,0.0,0.0,0.1,0.0,0.5,0.0,0.0,0.125,0.8,0.49141926594012275	
 0.0,0.28292011019283747,0.0,0.0,0.1,0.0,0.5,0.0,0.9473684210526315,,0.0,0.3379681823875736
 
-# Manual enter EOF
 EOF 
 
 output=output-5
@@ -165,17 +172,21 @@ $HADOOP_HOME/bin/mapred streaming \
     -mapper "missing-data-impute-mapper.py" 
 
 hadoop fs -head "/machine-learning-final/${output}/part-00000"
+rm ./target/imputed.csv
 hadoop fs -get /machine-learning-final/${output}/part-00000 ./target/imputed.csv
 echo 'User_ID,Product_ID,Gender,Age,Occupation,City_Category,Stay_In_Current_City_Years,Marital_Status,Product_Category_1,Product_Category_2,Product_Category_3,Purchase' > ./target/training_final.csv
 cat ./target/imputed.csv >> ./target/training_final.csv
 head ./target/training_final.csv
 
+echo "### Save CSV data into Tensorflow TfRecords"
 
 cat  <<- EOF  | python ./reducers/tf-records-reducer.py
 0.0,0.0,0.0,0.0,0.1,0.0,0.5,0.0,0.6842105263157895,0.25,0.8,0.5699611674808969	
 0.0,0.012947658402203856,0.0,0.0,0.1,0.0,0.5,0.0,0.6842105263157895,0.25,0.2,0.5697523904964716	
 0.0,0.06859504132231405,0.0,0.0,0.1,0.0,0.5,0.0,0.0,0.125,1.0,0.6437011983798906	
+
 EOF
+
 output=output-final
 hadoop fs -rm -r /machine-learning-final/${output}
 $HADOOP_HOME/bin/mapred streaming \
