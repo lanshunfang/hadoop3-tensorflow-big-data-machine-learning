@@ -22,7 +22,9 @@ MapReduce, Hadoop, Hadoop Streaming, HDFS, YARN, Machine Learning, Deep Learning
   - Then we will store the processed CSV Data as TFRecords files in HDFS via Tensorflow TFRecordWriter
     - `TFRecords` is an efficient Tensorflow data format that supports distributive training
     - Tensorflow supports reading `TFRecords` from HDFS with optimized batch size
-- The data we used here is from [Kaggle](https://www.kaggle.com/sdolezel/black-friday?select=train.csv)
+
+## Data source
+- The data we used here is from [Kaggle - Black Friday sales](https://www.kaggle.com/sdolezel/black-friday?select=train.csv)
 
 ## Prerequisites
 - macOS Catalina as the development machine
