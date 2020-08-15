@@ -198,6 +198,9 @@ hadoop fs -du -s -h /machine-learning-final/tfrecords
 - Alibaba-Cloud, E. (2019). Prepare TensorFlow training data by using TFRecord and HDFS. Retrieved August 08, 2020, from https://partners-intl.aliyun.com/help/doc-detail/53928.htm
 - CSDN, 零. (2020, May). Use Hadoop Streaming to generate distributive TFRecord files. Retrieved August 08, 2020, from https://blog.csdn.net/cdj0311/article/details/105991138
 
+# Appendix
+- Will attach another PDF
+
 
 
 
