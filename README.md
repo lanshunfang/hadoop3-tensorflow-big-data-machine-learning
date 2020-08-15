@@ -200,6 +200,7 @@ hadoop fs -du -s -h /machine-learning-final/tfrecords
 
 # Appendix
 - Will attach another PDF
+- [Online Github repo link](https://github.com/lanshunfang/hadoop3-tensorflow-big-data-machine-learning)
 
 
 
